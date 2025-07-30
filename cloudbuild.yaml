@@ -6,6 +6,7 @@ steps:
   args:
     - -c
     - |
+      echo "$TF_SA_KEY" > /workspace/sa-key.json
       gcloud auth activate-service-account \
         --key-file=/workspace/keys/sa-key.json
 
@@ -39,4 +40,4 @@ steps:
 availableSecrets:
   secretManager:
   - versionName: projects/poc-landing-zone-65357/secrets/TF_BUILDER_KEY/versions/latest
-    mountPath: /workspace/sa-key.json
+    env: TF_SA_KEY
