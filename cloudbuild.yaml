@@ -1,45 +1,48 @@
+# cloudbuild.yaml
 options:
   logging: CLOUD_LOGGING_ONLY
+
 steps:
-# 1) Fetch and authenticate the SA key
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
-  id: 'Authenticate'
-  entrypoint: bash
-  args:
-    - -c
-    - |
-      echo "$TF_SA_KEY" > /workspace/sa-key.json
-      gcloud auth activate-service-account \
-        --key-file=/workspace/keys/sa-key.json
+  # 1) Authenticate using the SA key from Secret Manager
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    id: "Authenticate"
+    entrypoint: "bash"
+    env:
+      - "TF_SA_KEY"
+    args:
+      - "-c"
+      - |
+        echo "$TF_SA_KEY" > /workspace/sa-key.json
+        gcloud auth activate-service-account \
+          --key-file=/workspace/sa-key.json
 
-# 2) Init Terraform (uses backend.tf in bootstrap/)
-- name: 'hashicorp/terraform:1.5.0'
-  id: 'Init'
-  dir: 'bootstrap'
-  args:
-    - init
-    - -input=false
+  # 2) Terraform init
+  - name: "hashicorp/terraform:1.5.0"
+    id: "Init"
+    dir: "bootstrap"
+    args:
+      - "init"
+      - "-input=false"
 
-# 3) Plan
-- name: 'hashicorp/terraform:1.5.0'
-  id: 'Plan'
-  dir: 'bootstrap'
-  args:
-    - plan
-    - -out=tfplan
+  # 3) Terraform plan
+  - name: "hashicorp/terraform:1.5.0"
+    id: "Plan"
+    dir: "bootstrap"
+    args:
+      - "plan"
+      - "-out=tfplan"
 
-# 4) Apply
-- name: 'hashicorp/terraform:1.5.0'
-  id: 'Apply'
-  dir: 'bootstrap'  
-  args:
-    - apply
-    - -input=false
-    - -auto-approve
-    - tfplan
+  # 4) Terraform apply
+  - name: "hashicorp/terraform:1.5.0"
+    id: "Apply"
+    dir: "bootstrap"
+    args:
+      - "apply"
+      - "-input=false"
+      - "-auto-approve"
+      - "tfplan"
 
-# Make the secret available as an env var
 availableSecrets:
   secretManager:
-  - versionName: projects/poc-landing-zone-65357/secrets/TF_BUILDER_KEY/versions/latest
-    env: TF_SA_KEY
+    - versionName: "projects/poc-landing-zone-65357/secrets/TF_BUILDER_KEY/versions/latest"
+      env: "TF_SA_KEY"
