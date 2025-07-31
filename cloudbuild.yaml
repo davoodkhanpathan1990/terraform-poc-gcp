@@ -3,7 +3,7 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # 1) Authenticate using the SA key from Secret Manager
+  # 1) Authenticate via the SA JSON in TF_SA_KEY
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
     id: "Authenticate"
     entrypoint: "bash"
@@ -20,27 +20,19 @@ steps:
   - name: "hashicorp/terraform:1.5.0"
     id: "Init"
     dir: "bootstrap"
-    args:
-      - "init"
-      - "-input=false"
+    args: ["init", "-input=false"]
 
   # 3) Terraform plan
   - name: "hashicorp/terraform:1.5.0"
     id: "Plan"
     dir: "bootstrap"
-    args:
-      - "plan"
-      - "-out=tfplan"
+    args: ["plan", "-out=tfplan"]
 
   # 4) Terraform apply
   - name: "hashicorp/terraform:1.5.0"
     id: "Apply"
     dir: "bootstrap"
-    args:
-      - "apply"
-      - "-input=false"
-      - "-auto-approve"
-      - "tfplan"
+    args: ["apply", "-input=false", "-auto-approve", "tfplan"]
 
 availableSecrets:
   secretManager:
