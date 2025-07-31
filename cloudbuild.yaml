@@ -1,3 +1,5 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
 steps:
 # 1) Fetch and authenticate the SA key
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
